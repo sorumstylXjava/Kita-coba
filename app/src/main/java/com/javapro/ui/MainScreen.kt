@@ -241,58 +241,47 @@ private fun MobileLayout(
         }
     }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        containerColor      = Color.Transparent
-    ) { padding ->
-        Column(
+    val density           = androidx.compose.ui.platform.LocalDensity.current
+    val systemNavHeightDp = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    val contentBottomPad  = if (showNav) 58.dp + 8.dp + systemNavHeightDp else 0.dp
+
+    Column(modifier = Modifier.fillMaxSize().background(Color.Transparent)) {
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding())
+                .weight(1f)
+                .nestedScroll(nestedScrollConnection)
         ) {
-            // Tinggi area navbar + system nav bar — dipakai sebagai bottom padding konten
-            val navBarHeightDp     = if (showNav) 58.dp + 8.dp else 0.dp // bar height(58) + bottom padding(8)
-            val navBarInsets       = WindowInsets.navigationBars
-            val density            = androidx.compose.ui.platform.LocalDensity.current
-            val systemNavHeightDp  = with(density) { navBarInsets.getBottom(density).toDp() }
-            val contentBottomPad   = if (showNav) navBarHeightDp + systemNavHeightDp else 0.dp
+            NavContent(
+                navController = navController,
+                prefManager   = prefManager,
+                onShowAd      = onShowAd,
+                modifier      = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = contentBottomPad)
+            )
 
-            Box(modifier = Modifier.weight(1f).nestedScroll(nestedScrollConnection)) {
-                NavContent(
-                    navController = navController,
-                    prefManager   = prefManager,
-                    onShowAd      = onShowAd,
-                    modifier      = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = contentBottomPad)
-                )
-
-                if (showNav) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            // Extend ke bawah cover system nav bar — hapus background abu-abu
-                            .background(Color.Transparent)
-                            .windowInsetsPadding(WindowInsets.navigationBars)
-                            .padding(bottom = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        JavaProNavBar(
-                            items         = items,
-                            currentRoute  = currentRoute,
-                            navController = navController,
-                            isVisible     = navIsVisible,
-                            useFloating   = useFloatingNav,
-                            onShowAd      = onShowAd
-                        )
-                    }
+            if (showNav) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = systemNavHeightDp + 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    JavaProNavBar(
+                        items         = items,
+                        currentRoute  = currentRoute,
+                        navController = navController,
+                        isVisible     = navIsVisible,
+                        useFloating   = useFloatingNav,
+                        onShowAd      = onShowAd
+                    )
                 }
             }
+        }
 
-            if (!isPremium) {
-                BannerAdView(modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 50.dp))
-            }
+        if (!isPremium) {
+            BannerAdView(modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 50.dp))
         }
     }
 }
