@@ -129,8 +129,8 @@ fun GlowLiquidNavBar(
     val navBarWidth   = configuration.screenWidthDp.dp * 0.85f
     val barHeight     = 58.dp
     val pillPadding   = 4.dp
-    val navBgBase     = MaterialTheme.colorScheme.surfaceContainerHigh
-    val glassTop      = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
+    val navBgBase     = Color.Transparent
+    val glassTop      = Color.Transparent
     val glassBot      = Color.Transparent
 
     val selectedIndex = items.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
@@ -150,8 +150,8 @@ fun GlowLiquidNavBar(
     }
 
     Box(modifier = Modifier.width(navBarWidth).height(barHeight), contentAlignment = Alignment.Center) {
-        Box(modifier = Modifier.fillMaxSize().shadow(20.dp, CircleShape, ambientColor = Color.Black.copy(0.15f), spotColor = Color.Black.copy(0.10f)).clip(CircleShape).background(navBgBase))
-        Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Brush.verticalGradient(listOf(glassTop, glassBot))))
+        Box(modifier = Modifier.fillMaxSize().clip(CircleShape))
+        
 
         if (itemWidthPx.value > 0f) {
             Box(

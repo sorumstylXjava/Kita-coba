@@ -237,10 +237,11 @@ private fun MobileLayout(
     val systemNavHeightDp = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
     val contentBottomPad  = if (showNav) 58.dp + 8.dp + systemNavHeightDp else 0.dp
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.Transparent)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Konten — background hanya sampai sebelum system nav bar
         Box(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
                 .nestedScroll(nestedScrollConnection)
         ) {
             NavContent(
@@ -249,31 +250,40 @@ private fun MobileLayout(
                 onShowAd      = onShowAd,
                 modifier      = Modifier
                     .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(bottom = contentBottomPad)
             )
+        }
 
-            if (showNav) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = systemNavHeightDp + 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    JavaProNavBar(
-                        items         = items,
-                        currentRoute  = currentRoute,
-                        navController = navController,
-                        isVisible     = navIsVisible,
-                        useFloating   = useFloatingNav,
-                        onShowAd      = onShowAd
-                    )
-                }
+        // Nav bar melayang di atas konten, di atas background app
+        if (showNav) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = systemNavHeightDp + 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                JavaProNavBar(
+                    items         = items,
+                    currentRoute  = currentRoute,
+                    navController = navController,
+                    isVisible     = navIsVisible,
+                    useFloating   = useFloatingNav,
+                    onShowAd      = onShowAd
+                )
             }
         }
 
+        // Banner ad di atas system nav bar
         if (!isPremium) {
-            BannerAdView(modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 50.dp))
+            BannerAdView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = systemNavHeightDp)
+                    .defaultMinSize(minHeight = 50.dp)
+            )
         }
     }
 }
