@@ -49,6 +49,19 @@ object FpsParser {
     }
 
     /**
+     * Parse total frames from gfxinfo
+     */
+    fun parseTotalFrames(output: String): Long {
+        val lines = output.lines()
+        for (line in lines) {
+            if (line.contains("Total frames rendered:")) {
+                return line.split(":").getOrNull(1)?.trim()?.toLongOrNull() ?: 0L
+            }
+        }
+        return 0L
+    }
+
+    /**
      * Parse SurfaceFlinger latency output
      * Command: dumpsys SurfaceFlinger --latency <window>
      * Output:

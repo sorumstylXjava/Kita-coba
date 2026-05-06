@@ -1,6 +1,7 @@
 package com.javapro.fps.ui
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.javapro.fps.model.FpsStats
@@ -67,6 +68,15 @@ class FpsViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isRunning = true, targetPackage = packageName) }
         monitorManager.startMonitoring(packageName)
 
+        val intent = Intent(getApplication(), com.javapro.fps.service.FpsOverlayService::class.java).apply {
+            putExtra("package_name", packageName)
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            getApplication<Application>().startForegroundService(intent)
+        } else {
+            getApplication<Application>().startService(intent)
+        }
+
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch(Dispatchers.IO) {
             while (true) {
@@ -94,6 +104,9 @@ class FpsViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isRunning = false) }
         monitorManager.stopMonitoring()
         pollingJob?.cancel()
+
+        val intent = Intent(getApplication(), com.javapro.fps.service.FpsOverlayService::class.java)
+        getApplication<Application>().stopService(intent)
     }
 
     override fun onCleared() {

@@ -28,6 +28,9 @@ class FpsMonitorManager(private val context: Context) {
     private var targetPackage: String = ""
     private var refreshRate: Float = 60f
 
+    private var lastTotalFrames: Long = 0L
+    private var lastTimestamp: Long = 0L
+
     enum class Backend {
         SURFACE_FLINGER,
         GFXINFO,
@@ -65,11 +68,16 @@ class FpsMonitorManager(private val context: Context) {
     private suspend fun trySurfaceFlinger(): Boolean {
         _activeBackend.value = "SurfaceFlinger (Detecting...)"
         val output = runCommand("dumpsys SurfaceFlinger --latency")
-        if (output.isNotBlank() && !output.contains("Permission denied")) {
+        val lines = output.lines().filter { it.isNotBlank() }
+
+        if (lines.size > 1 && !output.contains("Permission denied")) {
+            android.util.Log.d("FpsMonitor", "SurfaceFlinger valid: ${lines.size} lines")
             currentBackend = Backend.SURFACE_FLINGER
             _activeBackend.value = "SurfaceFlinger"
             runSurfaceFlingerLoop()
             return true
+        } else {
+            android.util.Log.d("FpsMonitor", "SurfaceFlinger invalid (only ${lines.size} lines or permission denied)")
         }
         return false
     }
@@ -89,8 +97,10 @@ class FpsMonitorManager(private val context: Context) {
     private suspend fun runSurfaceFlingerLoop() {
         while (coroutineContext.isActive) {
             val output = runCommand("dumpsys SurfaceFlinger --latency")
-            if (output.isBlank() || output.contains("Permission denied")) {
-                // Fallback
+            val lines = output.lines().filter { it.isNotBlank() }
+
+            if (lines.size <= 1 || output.contains("Permission denied")) {
+                android.util.Log.d("FpsMonitor", "SurfaceFlinger became invalid, falling back...")
                 if (tryGfxInfo()) break
             }
             val samples = FpsParser.parseSurfaceFlinger(output)
@@ -102,16 +112,41 @@ class FpsMonitorManager(private val context: Context) {
     }
 
     private suspend fun runGfxInfoLoop() {
+        lastTotalFrames = 0L
+        lastTimestamp = System.currentTimeMillis()
+
         while (coroutineContext.isActive) {
             val output = runCommand("dumpsys gfxinfo $targetPackage framestats")
             if (output.isBlank() || output.contains("Permission denied")) {
                 _activeBackend.value = "Failed"
                 break
             }
-            val samples = FpsParser.parseGfxInfo(output)
-            if (samples.isNotEmpty()) {
-                _frameSamples.value = samples
+
+            val currentTimestamp = System.currentTimeMillis()
+            val deltaTimeMs = currentTimestamp - lastTimestamp
+            val totalFrames = FpsParser.parseTotalFrames(output)
+
+            android.util.Log.d("FpsMonitor", "GfxInfo output length: ${output.length}, totalFrames: $totalFrames")
+
+            if (lastTotalFrames > 0 && deltaTimeMs > 0) {
+                val deltaFrames = totalFrames - lastTotalFrames
+                val fps = deltaFrames * 1000f / deltaTimeMs
+
+                android.util.Log.d("FpsMonitor", "DeltaFrames: $deltaFrames, DeltaTime: $deltaTimeMs, Calculated FPS: $fps")
+
+                // If delta-based FPS is valid, we can use it to augment or replace sample-based stats
+                // For now, let's parse samples too for frame time detail
+                val samples = FpsParser.parseGfxInfo(output)
+                if (samples.isNotEmpty()) {
+                    // Update samples with calculated FPS from delta if needed
+                    // but for now calculateStats handles it from samples.
+                    _frameSamples.value = samples
+                }
             }
+
+            lastTotalFrames = totalFrames
+            lastTimestamp = currentTimestamp
+
             delay(500)
         }
     }

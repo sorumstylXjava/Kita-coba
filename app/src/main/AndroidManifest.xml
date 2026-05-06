@@ -127,5 +127,11 @@
             android:name=".service.BatteryMonitorService"
             android:foregroundServiceType="dataSync" />
 
+        <service
+            android:name=".fps.service.FpsOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+
     </application>
 </manifest>
