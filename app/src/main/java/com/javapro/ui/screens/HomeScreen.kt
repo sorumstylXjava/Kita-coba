@@ -1022,24 +1022,21 @@ private fun FpsMonitorCard(
     prefManager     : PreferenceManager,
     navController   : NavController
 ) {
-    val accentColor = MaterialTheme.colorScheme.primary
-    val borderColor = accentColor.copy(0.22f)
-
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(32.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .border(BorderStroke(0.8.dp, borderColor), RoundedCornerShape(32.dp))
+            .border(BorderStroke(0.8.dp, MaterialTheme.colorScheme.primary.copy(0.22f)), RoundedCornerShape(32.dp))
             .clickable { navController.navigate("fps_stats") }
     ) {
         Column(modifier = Modifier.padding(14.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(
                 modifier         = Modifier
                     .size(48.dp)
-                    .background(accentColor.copy(0.16f), RoundedCornerShape(14.dp))
-                    .border(BorderStroke(1.dp, accentColor.copy(0.3f)), RoundedCornerShape(14.dp)),
+                    .background(MaterialTheme.colorScheme.primary.copy(0.16f), RoundedCornerShape(14.dp))
+                    .border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(0.3f)), RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
-            ) { Icon(Icons.Default.Speed, null, tint = accentColor, modifier = Modifier.size(26.dp)) }
+            ) { Icon(Icons.Default.Speed, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp)) }
 
             Text(
                 stringResource(R.string.home_fps_monitor_title),
@@ -1056,7 +1053,7 @@ private fun FpsMonitorCard(
             )
 
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.ChevronRight, null, tint = accentColor.copy(0.7f), modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.primary.copy(0.7f), modifier = Modifier.size(18.dp))
             }
         }
     }

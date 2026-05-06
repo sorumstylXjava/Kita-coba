@@ -241,12 +241,12 @@ private fun MobileLayout(
 
     // Konten padding: nav bar + (banner kalau free) + system nav
     val contentBottomPad  = if (showNav)
-        58.dp + 8.dp + bannerHeightDp + systemNavHeightDp
+        58.dp + 4.dp + bannerHeightDp + systemNavHeightDp
     else
         bannerHeightDp + systemNavHeightDp
 
     // NavBar bottom offset: premium → tepat di atas system nav, free → di atas banner
-    val navBarBottomPad   = systemNavHeightDp + 8.dp + bannerHeightDp
+    val navBarBottomPad   = systemNavHeightDp + 4.dp + bannerHeightDp
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Konten utama

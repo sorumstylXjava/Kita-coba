@@ -27,11 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavController
 import com.javapro.utils.TweakExecutor
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.*
 
 data class FpsSession(
     val packageName : String,
@@ -59,19 +55,7 @@ fun FpsStatsScreen(navController: NavController) {
     var currentFps by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
-        sessions = withContext(Dispatchers.IO) {
-            listOf(
-                FpsSession(
-                    packageName = "com.example.game",
-                    appLabel    = "Sample Game",
-                    date        = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
-                    avgFps      = 0f,
-                    powerW      = 0f,
-                    duration    = 0L,
-                    icon        = try { pm.getApplicationIcon("com.example.game") } catch (_: Exception) { null }
-                )
-            ).filter { false }
-        }
+        sessions = emptyList()
     }
 
     Scaffold(
@@ -132,6 +116,7 @@ fun FpsStatsScreen(navController: NavController) {
             Spacer(Modifier.weight(1f))
 
             BottomBar(
+                sessions   = sessions,
                 onClearAll = { sessions = emptyList() },
                 onRecord   = { recording = !recording }
             )
@@ -258,7 +243,7 @@ private fun EmptySessionsCard() {
             .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(20.dp))
-            .padding(vertical = 32.dp),
+            .padding(vertical = 20.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -367,7 +352,11 @@ private fun SessionCard(session: FpsSession, onDelete: () -> Unit) {
 }
 
 @Composable
-private fun BottomBar(onClearAll: () -> Unit, onRecord: () -> Unit) {
+private fun BottomBar(
+    sessions  : List<FpsSession>,
+    onClearAll: () -> Unit,
+    onRecord  : () -> Unit
+) {
     Surface(
         shape  = RoundedCornerShape(20.dp),
         color  = MaterialTheme.colorScheme.surface,
@@ -381,7 +370,9 @@ private fun BottomBar(onClearAll: () -> Unit, onRecord: () -> Unit) {
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChipItem(icon = Icons.Default.Android, label = "All") {}
-                FilterChipItem(icon = Icons.Default.AllInclusive, label = "Launcher") {}
+                sessions.map { it.appLabel }.distinct().take(2).forEach { label ->
+                    FilterChipItem(icon = Icons.Default.AllInclusive, label = label) {}
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 IconButton(
