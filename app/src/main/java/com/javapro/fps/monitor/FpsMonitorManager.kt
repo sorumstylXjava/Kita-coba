@@ -157,12 +157,17 @@ class FpsMonitorManager(private val context: Context) {
     }
 
     private fun getRefreshRate(): Float {
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.display?.refreshRate ?: 60f
-        } else {
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay.refreshRate
+        return try {
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.refreshRate
+            } else {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.refreshRate
+            }
+        } catch (e: Exception) {
+            60f
         }
     }
 }
