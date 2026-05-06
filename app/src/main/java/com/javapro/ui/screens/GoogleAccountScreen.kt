@@ -53,9 +53,9 @@ fun GoogleAccountScreen(
     val scope    = rememberCoroutineScope()
 
     var user         by remember { mutableStateOf(GoogleAuthManager.getUser(context)) }
-    val isPremium    = remember { PremiumManager.isPremium(context) }
-    val premiumType  = remember { PremiumManager.getPremiumType(context) }
-    val expiryMs     = remember { PremiumManager.getExpiryMs(context) }
+    var isPremium    by remember { mutableStateOf(PremiumManager.isPremium(context)) }
+    var premiumType  by remember { mutableStateOf(PremiumManager.getPremiumType(context)) }
+    var expiryMs     by remember { mutableStateOf(PremiumManager.getExpiryMs(context)) }
 
     val avatarFile          = remember { java.io.File(context.filesDir, "custom_avatar.jpg") }
     val avatarPrefs         = remember { context.getSharedPreferences("avatar_prefs", android.content.Context.MODE_PRIVATE) }
@@ -485,8 +485,17 @@ fun GoogleAccountScreen(
                     subtitle = strRefreshPremiumDesc,
                     onClick  = {
                         scope.launch {
-                            val result = PremiumManager.checkOnline(context)
-                            Toast.makeText(context, if (result) "✓ Premium aktif" else "✗ Premium tidak ditemukan", Toast.LENGTH_SHORT).show()
+                            PremiumManager.invalidateCache(context)
+                            val result = PremiumManager.checkOnline(context, forceRefresh = true)
+                            // Update state supaya UI langsung reflect
+                            isPremium   = result
+                            premiumType = PremiumManager.getPremiumType(context)
+                            expiryMs    = PremiumManager.getExpiryMs(context)
+                            Toast.makeText(
+                                context,
+                                if (result) "✓ Premium aktif" else "✗ Premium tidak ditemukan",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 )

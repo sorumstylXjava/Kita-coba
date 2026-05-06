@@ -46,7 +46,7 @@ fun SplashScreen(onLoadingFinished: () -> Unit) {
 
         val rootCheck = TweakExecutor.checkRoot()
         isRooted = rootCheck
-        PremiumManager.checkOnline(context)
+        PremiumManager.checkOnline(context, forceRefresh = true)
 
         showBottom = true
         delay(900)
