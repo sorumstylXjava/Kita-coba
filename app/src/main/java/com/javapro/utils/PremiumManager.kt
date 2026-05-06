@@ -30,7 +30,7 @@ object PremiumManager {
     private const val KEY_VERIFIED  = "premium_verified"
     private const val KEY_LAST_CHECK = "premium_last_check"
     private const val KEY_EMAIL     = "premium_email"
-    private const val CACHE_TTL_MS  = 30 * 60 * 1000L // 30 menit
+    private const val CACHE_TTL_MS  = 5 * 60 * 1000L // 5 menit — supaya revoke cepat kedetect
 
     private val REAL_PREMIUM_TYPES = setOf("permanent", "weekly", "monthly", "yearly")
 
@@ -158,7 +158,19 @@ object PremiumManager {
         prefs(context).getString(KEY_EMAIL, null)
 
     fun invalidateCache(context: Context) {
+        // Reset timestamp saja — supaya checkOnline pasti hit server
         prefs(context).edit().putLong(KEY_LAST_CHECK, 0L).apply()
+    }
+
+    fun clearCacheAndPremium(context: Context) {
+        // Hapus semua cache premium — dipanggil saat verifikasi server bilang tidak premium
+        prefs(context).edit()
+            .putLong(KEY_LAST_CHECK, 0L)
+            .remove(KEY_TYPE)
+            .remove(KEY_EXPIRY)
+            .remove(KEY_EMAIL)
+            .putBoolean(KEY_VERIFIED, false)
+            .apply()
     }
 
     // ── Online check via Google idToken ───────────────────────────────────────
@@ -226,7 +238,12 @@ object PremiumManager {
                 }
 
                 prefs(context).edit().putLong(KEY_LAST_CHECK, System.currentTimeMillis()).apply()
-                saveCache(context, premium, type.ifEmpty { null }, expiry, email.ifEmpty { null })
+                if (!premium) {
+                    // Server bilang tidak premium — hapus cache lokal supaya tidak stale
+                    clearCacheAndPremium(context)
+                } else {
+                    saveCache(context, premium, type.ifEmpty { null }, expiry, email.ifEmpty { null })
+                }
                 premium
 
             } catch (_: Exception) {
