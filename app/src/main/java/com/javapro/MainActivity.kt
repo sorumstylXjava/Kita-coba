@@ -155,6 +155,7 @@ class MainActivity : ComponentActivity() {
 
         TweakManager.init(this)
         checkNotificationPermission()
+        checkOverlayPermission()
 
         if (!hasUsageStatsPermission()) {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
@@ -392,6 +393,17 @@ class MainActivity : ComponentActivity() {
             ) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
+        }
+    }
+
+    private fun checkOverlayPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, getString(R.string.toast_overlay_required), Toast.LENGTH_LONG).show()
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
         }
     }
 

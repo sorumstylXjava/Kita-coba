@@ -108,9 +108,10 @@ fun FpsStatsScreen(navController: NavController, viewModel: FpsViewModel = viewM
             }
 
             item {
+                val gpuVal = if (uiState.systemStats.gpuUsage >= 0) "%.0f%%".format(uiState.systemStats.gpuUsage) else "--"
                 ChartContainer(
                     title = "GPU Usage",
-                    currentValue = "%.0f%%".format(uiState.systemStats.gpuUsage),
+                    currentValue = gpuVal,
                     data = viewModel.gpuHistory.toList(),
                     lineColor = Color(0xFFE91E63),
                     maxY = 100f
