@@ -59,6 +59,12 @@
         </provider>
 
         <service
+            android:name=".fps.service.FpsOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+
+        <service
             android:name=".FpsService"
             android:enabled="true"
             android:exported="false"

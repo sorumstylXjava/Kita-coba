@@ -81,7 +81,8 @@ fun SummaryGrid(fpsStats: FpsStats, systemStats: SystemStats) {
         Row(modifier = Modifier.fillMaxWidth()) {
             StatsCard("TEMP", "%.1f".format(systemStats.temperature), "°C", modifier = Modifier.weight(1f))
             StatsCard("CPU", "%.0f%%".format(systemStats.cpuUsage), modifier = Modifier.weight(1f))
-            StatsCard("GPU", "%.0f%%".format(systemStats.gpuUsage), modifier = Modifier.weight(1f))
+            val gpuValue = if (systemStats.gpuUsage >= 0) "%.0f%%".format(systemStats.gpuUsage) else "--"
+            StatsCard("GPU", gpuValue, modifier = Modifier.weight(1f))
         }
     }
 }
